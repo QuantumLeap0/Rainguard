@@ -1,3 +1,5 @@
+import os
+
 from flask import (
     Flask,
     render_template,
@@ -16,11 +18,26 @@ from security.auth import AuthManager
 
 app = Flask(__name__)
 
-# Session secret for hackathon prototype
-app.secret_key = "RAINGUARD-HACKATHON-DEMO-SECRET-CHANGE-ME"
+
+# ==========================================================
+# SECRET KEY / SESSION CONFIGURATION
+# ==========================================================
+
+# Use the SECRET_KEY environment variable in production.
+# A local fallback is provided for development/testing.
+
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "RAINGUARD-LOCAL-DEVELOPMENT-KEY"
+)
 
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# Render provides HTTPS.
+# Secure cookies should therefore be enabled when deployed.
+if os.environ.get("RENDER"):
+    app.config["SESSION_COOKIE_SECURE"] = True
 
 
 # ==========================================================
@@ -536,7 +553,9 @@ def farmer_check_policy():
 # ADMIN
 # ==========================================================
 
-@app.route("/admin")
+@app.route(
+    "/admin"
+)
 def admin():
 
     return render_template(
@@ -545,11 +564,37 @@ def admin():
 
 
 # ==========================================================
+# HEALTH CHECK
+# ==========================================================
+
+@app.route(
+    "/health"
+)
+def health():
+
+    return jsonify({
+
+        "status": "healthy",
+
+        "application": "RainGuard"
+    })
+
+
+# ==========================================================
 # RUN APPLICATION
 # ==========================================================
 
 if __name__ == "__main__":
 
+    port = int(
+        os.environ.get(
+            "PORT",
+            5000
+        )
+    )
+
     app.run(
+        host="0.0.0.0",
+        port=port,
         debug=True
     )
