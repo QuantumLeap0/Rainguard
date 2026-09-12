@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Farmer Login | RainGuard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="logo">
+            🌾 RainGuard
+        </div>
+
+        <a href="/" class="btn btn-secondary">
+            ← Home
+        </a>
+
+    </nav>
+
+
+    <main class="auth-container">
+
+        <div class="auth-card">
+
+            <div class="badge">
+                👨‍🌾 FARMER PORTAL
+            </div>
+
+            <h1>Farmer Login</h1>
+
+            <p>
+                Enter your Farmer ID and PIN to access
+                your RainGuard account.
+            </p>
+
+
+            <form id="loginForm">
+
+                <label for="farmer_id">
+                    Farmer ID
+                </label>
+
+                <input
+                    type="text"
+                    id="farmer_id"
+                    name="farmer_id"
+                    placeholder="DEMO-FARMER-001"
+                    required
+                >
+
+
+                <label for="pin">
+                    PIN
+                </label>
+
+                <input
+                    type="password"
+                    id="pin"
+                    name="pin"
+                    placeholder="Enter your PIN"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary login-button"
+                >
+                    🔐 Continue
+                </button>
+
+            </form>
+
+
+            <div id="loginMessage"></div>
+
+
+            <div class="login-info">
+
+                <strong>Demo Farmer</strong>
+
+                <p>
+                    DEMO-FARMER-001
+                </p>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        document
+            .getElementById("loginForm")
+            .addEventListener("submit", async function(event) {
+
+                event.preventDefault();
+
+                const farmerId =
+                    document.getElementById("farmer_id").value.trim();
+
+                const pin =
+                    document.getElementById("pin").value.trim();
+
+                const message =
+                    document.getElementById("loginMessage");
+
+
+                message.innerHTML =
+                    "Checking login...";
+
+
+                try {
+
+                    const response = await fetch(
+                        "/api/auth/login",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                farmer_id: farmerId,
+                                pin: pin
+                            })
+                        }
+                    );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (data.authenticated) {
+
+                        message.innerHTML =
+                            "✅ Login successful. Opening Farmer Portal...";
+
+                        setTimeout(function() {
+
+                            window.location.href =
+                                "/farmer";
+
+                        }, 500);
+
+                    }
+
+                    else {
+
+                        message.innerHTML =
+                            "❌ " +
+                            (data.error ||
+                            "Invalid Farmer ID or PIN.");
+
+                    }
+
+                }
+
+                catch (error) {
+
+                    console.error(error);
+
+                    message.innerHTML =
+                        "❌ Unable to connect to RainGuard server.";
+
+                }
+
+            });
+
+    </script>
+
+</body>
+
+</html>
